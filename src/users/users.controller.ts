@@ -86,11 +86,20 @@ export class UsersController {
   //   return request.currentUser;
   // }
 
+  @ApiCookieAuth()
+  @ApiResponse({ status: 201, description: 'Sign out successfully' })
   @Post('/signout')
   signOut(@Session() session: any) {
     session.userId = null;
   }
 
+  @ApiCookieAuth()
+  @ApiResponse({
+    status: 200,
+    description: 'Fetch User with ID',
+    type: UserDto,
+  })
+  @ApiNotFoundResponse({ description: 'User not found' })
   // @UseInterceptors(new SerializeInterceptor(UserDto))
   @Get('/:id')
   // Param return string
@@ -103,30 +112,39 @@ export class UsersController {
     return user;
   }
 
+  @ApiCookieAuth()
+  @ApiResponse({
+    status: 200,
+    description: 'Fetch all user with email',
+    type: UserDto,
+  })
   @Get()
   findAllUsers(@Query('email') email: string) {
     return this.usersService.find(email);
   }
 
+  @ApiCookieAuth()
+  @ApiResponse({
+    status: 200,
+    description: 'Delete User with ID',
+    type: UserDto,
+  })
+  @ApiNotFoundResponse({ description: 'User not found' })
   @Delete('/:id')
   removeUser(@Param('id') id: string) {
     return this.usersService.remove(parseInt(id));
   }
 
+  @ApiCookieAuth()
+  @ApiResponse({
+    status: 200,
+    description: 'Update User with ID',
+    type: UpdateUserDto,
+  })
+  @ApiNotFoundResponse({ description: 'User not found' })
   @Patch('/:id')
   // Create a new complicated DTO first
   updateUser(@Param('id') id: string, @Body() body: UpdateUserDto) {
     return this.usersService.update(parseInt(id), body);
   }
-
-  // // Example on session
-  // @Get('/colors/:color')
-  // setColor(@Param('color') color: string, @Session() session: any) {
-  //   session.color = color;
-  // }
-
-  // @Get('/colors')
-  // getColor(@Session() session: any) {
-  //   return session.color;
-  // }
 }
