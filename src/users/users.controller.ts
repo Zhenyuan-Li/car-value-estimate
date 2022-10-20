@@ -13,6 +13,13 @@ import {
   // UseInterceptors,
   // ClassSerializerInterceptor,
 } from '@nestjs/common';
+import {
+  ApiBody,
+  ApiCreatedResponse,
+  ApiOkResponse,
+  ApiTags,
+  ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
 
 import { User } from './user.entity';
 import { CreateUserDto } from './dtos/create-user.dto';
@@ -32,6 +39,7 @@ import { AuthGuard } from '../guards/auth.guard';
 // // Downside of this approach: if multiple controllers (which needs this ) exits,
 // // we have to add this interceptor to everywhere. This approach is comprehensive, but not smart. Make it globally
 // @UseInterceptors(CurrentUserInterceptor)
+@ApiTags('User')
 export class UsersController {
   // TODO: NotFoundError handling for all routes
   constructor(
@@ -40,6 +48,10 @@ export class UsersController {
   ) {}
 
   @Post('/signup')
+  @ApiCreatedResponse({
+    description: 'User Registration',
+  })
+  @ApiBody({ type: CreateUserDto })
   async createUser(@Body() body: CreateUserDto, @Session() session: any) {
     const user = await this.authService.signup(body.email, body.password);
     session.userId = user.id;
@@ -47,6 +59,9 @@ export class UsersController {
   }
 
   @Post('/signin')
+  @ApiOkResponse({ description: 'User Login' })
+  @ApiUnauthorizedResponse({ description: 'Invalid credentials' })
+  @ApiBody({ type: CreateUserDto })
   async signin(@Body() body: CreateUserDto, @Session() session: any) {
     const user = await this.authService.signin(body.email, body.password);
     session.userId = user.id;

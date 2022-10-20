@@ -8,6 +8,7 @@ import {
   Get,
   Query,
 } from '@nestjs/common';
+import { ApiCookieAuth, ApiTags } from '@nestjs/swagger';
 
 import { ReportDto } from './dtos/report.dto';
 import { CreateReportDto } from './dtos/create-report.dto';
@@ -20,6 +21,7 @@ import { CurrentUser } from '../users/decorators/current-user.decorator';
 import { User } from '../users/user.entity';
 import { Serialize } from 'src/interceptors/serialize.interceptor';
 
+@ApiTags('Report')
 @Controller('reports')
 export class ReportsController {
   constructor(private reportService: ReportsService) {}
@@ -27,6 +29,7 @@ export class ReportsController {
   @UseGuards(AuthGuard)
   @Post()
   @Serialize(ReportDto)
+  @ApiCookieAuth()
   createReport(@Body() body: CreateReportDto, @CurrentUser() user: User) {
     return this.reportService.create(body, user);
   }

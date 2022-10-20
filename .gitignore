@@ -1,3 +1,6 @@
+db.sqlite
+test.sqlite
+
 .env.development
 .env.test
 
