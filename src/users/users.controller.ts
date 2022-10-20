@@ -16,14 +16,16 @@ import {
 import {
   ApiBody,
   ApiCreatedResponse,
-  ApiOkResponse,
   ApiTags,
-  ApiUnauthorizedResponse,
+  ApiCookieAuth,
+  ApiBadRequestResponse,
+  ApiNotFoundResponse,
+  ApiResponse,
 } from '@nestjs/swagger';
 
 import { User } from './user.entity';
 import { CreateUserDto } from './dtos/create-user.dto';
-import { UpdateUserDTO } from './dtos/update-user.dto';
+import { UpdateUserDto } from './dtos/update-user.dto';
 import { UserDto } from './dtos/user.dto';
 import { UsersService } from './users.service';
 import { AuthService } from './auth.service';
@@ -47,27 +49,33 @@ export class UsersController {
     private authService: AuthService,
   ) {}
 
-  @Post('/signup')
   @ApiCreatedResponse({
     description: 'User Registration',
+    type: UserDto,
   })
+  @ApiBadRequestResponse({ description: 'Email is in use' })
   @ApiBody({ type: CreateUserDto })
+  @Post('/signup')
   async createUser(@Body() body: CreateUserDto, @Session() session: any) {
     const user = await this.authService.signup(body.email, body.password);
     session.userId = user.id;
     return user;
   }
 
-  @Post('/signin')
-  @ApiOkResponse({ description: 'User Login' })
-  @ApiUnauthorizedResponse({ description: 'Invalid credentials' })
+  @ApiCreatedResponse({ description: 'User Login', type: UserDto })
+  @ApiBadRequestResponse({ description: 'Password is wrong' })
+  @ApiNotFoundResponse({ description: 'User not found' })
+  // @ApiUnauthorizedResponse({ description: 'Invalid credentials' })
   @ApiBody({ type: CreateUserDto })
+  @Post('/signin')
   async signin(@Body() body: CreateUserDto, @Session() session: any) {
     const user = await this.authService.signin(body.email, body.password);
     session.userId = user.id;
     return user;
   }
 
+  @ApiResponse({ status: 200, description: 'Here you are', type: UserDto })
+  @ApiCookieAuth()
   @Get('/whoami')
   @UseGuards(AuthGuard)
   whoAmI(@CurrentUser() user: User) {
@@ -107,7 +115,7 @@ export class UsersController {
 
   @Patch('/:id')
   // Create a new complicated DTO first
-  updateUser(@Param('id') id: string, @Body() body: UpdateUserDTO) {
+  updateUser(@Param('id') id: string, @Body() body: UpdateUserDto) {
     return this.usersService.update(parseInt(id), body);
   }
 
